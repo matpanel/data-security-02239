@@ -17,37 +17,37 @@ public class RmiPrintServer extends UnicastRemoteObject implements PrintServer {
     }
 
     @Override
-    public void queue(Credentials credentials) throws RemoteException {
-
+    public void queue(Credentials credentials) throws AuthenticationException {
+        this.consolePrintServer.queue(credentials);
     }
 
     @Override
-    public void start(Credentials credentials) throws RemoteException {
-
+    public void start(Credentials credentials) throws AuthenticationException {
+        this.consolePrintServer.start(credentials);
     }
 
     @Override
-    public void restart(Credentials credentials) throws RemoteException {
-
+    public void restart(Credentials credentials) throws AuthenticationException {
+        this.consolePrintServer.restart(credentials);
     }
 
     @Override
-    public void stop(Credentials credentials) throws RemoteException {
-
+    public void stop(Credentials credentials) throws AuthenticationException {
+        this.consolePrintServer.stop(credentials);
     }
 
     @Override
-    public void printerStatus(Credentials credentials) throws RemoteException {
-
+    public void printerStatus(Credentials credentials) throws AuthenticationException {
+        this.consolePrintServer.printerStatus(credentials);
     }
 
     @Override
-    public void readConfig(String parameter, Credentials credentials) throws RemoteException {
-
+    public void readConfig(String parameter, Credentials credentials) throws AuthenticationException {
+        this.consolePrintServer.readConfig(parameter, credentials);
     }
 
     @Override
-    public void setConfig(String parameter, String value, Credentials credentials) throws RemoteException {
-
+    public void setConfig(String parameter, String value, Credentials credentials) throws AuthenticationException {
+        this.consolePrintServer.setConfig(parameter, value, credentials);
     }
 }
