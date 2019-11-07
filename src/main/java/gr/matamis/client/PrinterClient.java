@@ -21,7 +21,7 @@ public class PrinterClient {
 
         try {
 /*
-//      Someone can input all arguments at the same time
+//    case1  Someone can input all arguments at the same time
             String filename = args[0];
             String printerName = args[1];
             String username = args[2];
@@ -29,7 +29,8 @@ public class PrinterClient {
  */
 
 /*
-//  someone can input the arguments from the console
+//  case2 someone can input the arguments from the console
+//  has the benefit that it doesn't echo your password to the console
 //  sadly this way it cannot be run from inside the IDE.
 
             Console console = System.console();
@@ -40,6 +41,7 @@ public class PrinterClient {
             System.out.print("Enter your username: ");
             String username = console.readLine();
 
+// the password is not revealed at the console
             System.out.println("Enter your password: ");
             char[] passwordchar = console.readPassword();
             String password = String.valueOf(passwordchar);
@@ -52,7 +54,7 @@ public class PrinterClient {
 
  */
 
-//      Taking input using the Scanner Class
+//   case3   Taking input using the Scanner Class
             Scanner scn = new Scanner(System.in);
             System.out.println("Enter your username: ");
             String username = scn.nextLine();
@@ -69,13 +71,13 @@ public class PrinterClient {
             Remote remoteComponent = Naming.lookup("rmi://localhost:5050/printer");
 
             PrintServer printServer = (PrintServer) remoteComponent;
-            Credentials panosCredentials = new Credentials(username, password);
+            Credentials credentials = new Credentials(username, password);
 
             // the line below was written for testing purposes
             //            Credentials jonasCredentials = new Credentials("jonas", "DTU#02239dtu");
 
             List<Credentials> credentialsList = new ArrayList<>();
-            credentialsList.add(panosCredentials);
+            credentialsList.add(credentials);
  //           credentialsList.add(jonasCredentials);
             for (Credentials userCredentials : credentialsList) {
                 try {
@@ -88,7 +90,7 @@ public class PrinterClient {
 
 
             try {
-                printServer.start(panosCredentials);
+                printServer.start(credentials);
             } catch (AuthenticationException ae) {
                 System.err.println("Oups: Not authenticated. " + ae.getMessage());
             }
