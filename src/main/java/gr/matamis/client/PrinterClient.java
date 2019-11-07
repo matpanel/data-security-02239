@@ -53,16 +53,18 @@ public class PrinterClient {
                         System.out.println("Enter printer name: (hint printer0 or printer1)");
                         printerName = scn.nextLine();
 
-                        printServer.start(credentials);
                         printServer.print(filename, printerName, credentials);
 
                         break;
                     case 2:
                         System.out.println("Enter printer name: (hint printer0 or printer1)");
                         printerName = scn.nextLine();
-                        Integer queueSize = printServer.queue(printerName, credentials);
-                        if (queueSize != null) {
-                            System.out.println("Queue size of printer " + printerName + " is " + queueSize);
+                        List<String> queue = printServer.queue(printerName, credentials);
+                        if (queue != null) {
+                            System.out.println("This is the queue for " + printerName);
+                            for (String jobEntry : queue) {
+                                System.out.println(jobEntry);
+                            }
                             System.out.println();
                         } else {
                             System.out.println("Queue size of printer " + printerName + " not found");
@@ -76,7 +78,12 @@ public class PrinterClient {
 
                         System.out.println("Which job would you like to move to the top of " + printerName + "? Enter job number:");
                         int jobNumber = scn.nextInt();
-                        printServer.topQueue(printerName, jobNumber, credentials);
+                        if (printServer.topQueue(printerName, jobNumber, credentials)) {
+                            System.out.println("Successfully moved job with id " + jobNumber + "to the top of " + printerName + "queue");
+                        } else {
+                            System.err.println("Failed to move job with id " + jobNumber + "to the top of " + printerName + "queue");
+                        }
+
                         break;
                     case 4:
                         printServer.start(credentials);

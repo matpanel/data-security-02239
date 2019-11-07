@@ -1,8 +1,6 @@
 package gr.matamis.server;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.*;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -12,15 +10,26 @@ public class ConsolePrintServer implements PrintServer {
     private final AuthenticationService authenticationService;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    private final Map<String, Queue<Pair<String, String>>> printerQueues;
+    private final Map<String, Deque<Integer>> printer2queue;
+    private final Map<String, Integer> printer2counter;
+
+    private final Map<String, Pair<String, String>> jobs;
 
     private ScheduledFuture<?> printerFuture;
 
+
     public ConsolePrintServer(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
-        this.printerQueues = new HashMap<>();
-        this.printerQueues.put("printer0", new ConcurrentLinkedDeque<>());
-        this.printerQueues.put("printer1", new ConcurrentLinkedDeque<>());
+
+        this.jobs = new HashMap<>();
+        this.printer2queue = new HashMap<>();
+        this.printer2counter = new HashMap<>();
+
+        this.printer2queue.put("printer0", new ConcurrentLinkedDeque<>());
+        this.printer2counter.put("printer0", 0);
+
+        this.printer2queue.put("printer1", new ConcurrentLinkedDeque<>());
+        this.printer2counter.put("printer1", 0);
     }
 
     @Override
@@ -28,25 +37,38 @@ public class ConsolePrintServer implements PrintServer {
 
         checkUserIsAuthenticated(credentials);
 
-        Queue<Pair<String, String>> printerQueue = printerQueues.get(printer);
+        Queue<Integer> printerQueue = printer2queue.get(printer);
         if (printerQueue != null) {
             String username = credentials.getUsername();
             ImmutablePair<String, String> jobEntry = new ImmutablePair<>(username, filename);
-            printerQueue.add(jobEntry);
+
+            Integer jobNumber = this.printer2counter.get(printer);
+            this.printer2counter.put(printer, jobNumber + 1);
+
+            jobs.put(printer + jobNumber, jobEntry);
+            printerQueue.add(jobNumber);
+
         }
 
     }
 
     @Override
-    public void topQueue(String printer, int job, Credentials credentials) {
-
+    public boolean topQueue(String printer, int job, Credentials credentials) throws AuthenticationException {
+        checkUserIsAuthenticated(credentials);
+        boolean success = false;
+        Deque<Integer> printerQueue = printer2queue.get(printer);
+        if (printerQueue != null && printerQueue.remove(job)) {
+            printerQueue.addFirst(job);
+            success = true;
+        }
+        return success;
     }
 
     @Override
     public String status(String printer, Credentials credentials) throws AuthenticationException {
         checkUserIsAuthenticated(credentials);
 
-        Queue<Pair<String, String>> printerQueue = printerQueues.get(printer);
+        Queue<Integer> printerQueue = printer2queue.get(printer);
         String result = null;
         if (printerQueue != null) {
             if (printerQueue.size() > 0) {
@@ -61,17 +83,22 @@ public class ConsolePrintServer implements PrintServer {
     }
 
     @Override
-    public Integer queue(String printer, Credentials credentials) throws AuthenticationException {
+    public List<String> queue(String printer, Credentials credentials) throws AuthenticationException {
         checkUserIsAuthenticated(credentials);
 
-        Queue<Pair<String, String>> printerQueue = printerQueues.get(printer);
-        Integer queueSize = null;
+        Queue<Integer> printerQueue = printer2queue.get(printer);
+        List<String> jobList = null;
         if (printerQueue != null) {
+            jobList = new ArrayList<>();
             System.out.println("Queue size for " + printer + " is " + printerQueue.size());
-            queueSize = printerQueue.size();
+            for (Integer jobNumber : printerQueue) {
+                Pair<String, String> jobEntry = jobs.get(printer + jobNumber);
+                jobList.add(jobNumber + " " + jobEntry.getRight());
+            }
+
         }
 
-        return queueSize;
+        return jobList;
     }
 
     @Override
@@ -120,14 +147,16 @@ public class ConsolePrintServer implements PrintServer {
     }
 
     private void printJobs() {
-        for (Map.Entry<String, Queue<Pair<String, String>>> printerEntry : printerQueues.entrySet()) {
+        for (Map.Entry<String, Deque<Integer>> printerEntry : printer2queue.entrySet()) {
 
-            Queue<Pair<String, String>> printerQueue = printerEntry.getValue();
+            Deque<Integer> printerQueue = printerEntry.getValue();
             String printerName = printerEntry.getKey();
-            Pair<String, String> jobEntry = printerQueue.poll();
-            if (jobEntry != null) {
+            Integer jobNumber = printerQueue.pollFirst();
+            if (jobNumber != null) {
+                String jobKey = printerName + jobNumber;
+                Pair<String, String> jobEntry = jobs.get(jobKey);
                 System.out.println("Printing [" + jobEntry.getRight() + "] on printer [" + printerName + "] for user [" + jobEntry.getLeft() + "]");
-
+                jobs.remove(jobKey);
             } else {
                 System.out.println("Nothing found for printer [" + printerName + "]");
             }

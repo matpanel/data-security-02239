@@ -2,6 +2,7 @@ package gr.matamis.server;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 
 public class RmiPrintServer extends UnicastRemoteObject implements PrintServer {
 
@@ -17,8 +18,8 @@ public class RmiPrintServer extends UnicastRemoteObject implements PrintServer {
     }
 
     @Override
-    public void topQueue(String printer, int job, Credentials credentials) {
-        this.consolePrintServer.topQueue(printer, job, credentials);
+    public boolean topQueue(String printer, int job, Credentials credentials) throws AuthenticationException {
+        return this.consolePrintServer.topQueue(printer, job, credentials);
     }
 
     @Override
@@ -27,7 +28,7 @@ public class RmiPrintServer extends UnicastRemoteObject implements PrintServer {
     }
 
     @Override
-    public Integer queue(String printer, Credentials credentials) throws AuthenticationException {
+    public List<String> queue(String printer, Credentials credentials) throws AuthenticationException {
         return this.consolePrintServer.queue(printer, credentials);
     }
 
