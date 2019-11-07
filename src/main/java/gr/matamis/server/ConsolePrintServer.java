@@ -38,8 +38,40 @@ public class ConsolePrintServer implements PrintServer {
     }
 
     @Override
-    public void queue(Credentials credentials) throws AuthenticationException {
+    public void topQueue(String printer, int job, Credentials credentials) {
+
+    }
+
+    @Override
+    public String status(String printer, Credentials credentials) throws AuthenticationException {
         checkUserIsAuthenticated(credentials);
+
+        Queue<Pair<String, String>> printerQueue = printerQueues.get(printer);
+        String result = null;
+        if (printerQueue != null) {
+            if (printerQueue.size() > 0) {
+                System.out.println("Printer " + printer + " is busy.");
+                result = "busy";
+            } else {
+                System.out.println("Printer " + printer + " is idle.");
+                result = "idle";
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Integer queue(String printer, Credentials credentials) throws AuthenticationException {
+        checkUserIsAuthenticated(credentials);
+
+        Queue<Pair<String, String>> printerQueue = printerQueues.get(printer);
+        Integer queueSize = null;
+        if (printerQueue != null) {
+            System.out.println("Queue size for " + printer + " is " + printerQueue.size());
+            queueSize = printerQueue.size();
+        }
+
+        return queueSize;
     }
 
     @Override
@@ -71,12 +103,8 @@ public class ConsolePrintServer implements PrintServer {
 
         if (this.printerFuture != null) {
             this.printerFuture.cancel(true);
+            this.printerFuture = null;
         }
-    }
-
-    @Override
-    public void printerStatus(Credentials credentials) throws AuthenticationException {
-        checkUserIsAuthenticated(credentials);
     }
 
     @Override

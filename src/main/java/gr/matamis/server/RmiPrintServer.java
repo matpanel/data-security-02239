@@ -17,8 +17,18 @@ public class RmiPrintServer extends UnicastRemoteObject implements PrintServer {
     }
 
     @Override
-    public void queue(Credentials credentials) throws AuthenticationException {
-        this.consolePrintServer.queue(credentials);
+    public void topQueue(String printer, int job, Credentials credentials) {
+        this.consolePrintServer.topQueue(printer, job, credentials);
+    }
+
+    @Override
+    public String status(String printer, Credentials credentials) throws AuthenticationException {
+        return this.consolePrintServer.status(printer, credentials);
+    }
+
+    @Override
+    public Integer queue(String printer, Credentials credentials) throws AuthenticationException {
+        return this.consolePrintServer.queue(printer, credentials);
     }
 
     @Override
@@ -34,11 +44,6 @@ public class RmiPrintServer extends UnicastRemoteObject implements PrintServer {
     @Override
     public void stop(Credentials credentials) throws AuthenticationException {
         this.consolePrintServer.stop(credentials);
-    }
-
-    @Override
-    public void printerStatus(Credentials credentials) throws AuthenticationException {
-        this.consolePrintServer.printerStatus(credentials);
     }
 
     @Override

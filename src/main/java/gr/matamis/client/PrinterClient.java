@@ -19,42 +19,14 @@ public class PrinterClient {
     public static void main(String[] args) {
 
 
+        Remote remoteComponent = null;
         try {
-/*
-//    case1  Someone can input all arguments at the same time
-            String filename = args[0];
-            String printerName = args[1];
-            String username = args[2];
-            String password = args[3];
- */
+            remoteComponent = Naming.lookup("rmi://localhost:5050/printer");
 
-/*
-//  case2 someone can input the arguments from the console
-//  has the benefit that it doesn't echo your password to the console
-//  sadly this way it cannot be run from inside the IDE.
 
-            Console console = System.console();
-            if (console==null){
-                System.out.println("No console: not in interactive mode!");
-                System.exit(0);
-            }
-            System.out.print("Enter your username: ");
-            String username = console.readLine();
+            PrintServer printServer = (PrintServer) remoteComponent;
 
-// the password is not revealed at the console
-            System.out.println("Enter your password: ");
-            char[] passwordchar = console.readPassword();
-            String password = String.valueOf(passwordchar);
 
-            System.out.print("Which file would you like to print? Enter filename: ");
-            String filename=console.readLine();
-
-            System.out.print("Enter printer name: (hint printer0 or printer1?)");
-            String printerName = console.readLine();
-
- */
-
-//   case3   Taking input using the Scanner Class
             Scanner scn = new Scanner(System.in);
             System.out.println("Enter your username: ");
             String username = scn.nextLine();
@@ -62,44 +34,122 @@ public class PrinterClient {
             System.out.println("Enter your password: ");
             String password = scn.nextLine();
 
-            System.out.println("Which file would you like to print? Enter filename: ");
-            String filename = scn.nextLine();
-
-            System.out.println("Enter printer name: (hint printer0 or printer1)");
-            String printerName = scn.nextLine();
-
-            Remote remoteComponent = Naming.lookup("rmi://localhost:5050/printer");
-
-            PrintServer printServer = (PrintServer) remoteComponent;
             Credentials credentials = new Credentials(username, password);
 
-            // the line below was written for testing purposes
-            //            Credentials jonasCredentials = new Credentials("jonas", "DTU#02239dtu");
+            String printerName;
+            String configProperty;
 
-            List<Credentials> credentialsList = new ArrayList<>();
-            credentialsList.add(credentials);
- //           credentialsList.add(jonasCredentials);
-            for (Credentials userCredentials : credentialsList) {
-                try {
-                    printServer.print(filename, printerName, userCredentials);
-                    System.out.println("Everything Ok for " + userCredentials.getUsername());
-                } catch (AuthenticationException ae) {
-                    System.err.println("Oups: Not authenticated. " + ae.getMessage());
+            boolean terminate = false;
+
+            do {
+                int selectedOption = selectOption();
+                switch (selectedOption) {
+
+
+                    case 1:
+                        System.out.println("Which file would you like to print? Enter filename: ");
+                        String filename = scn.nextLine();
+
+                        System.out.println("Enter printer name: (hint printer0 or printer1)");
+                        printerName = scn.nextLine();
+
+                        printServer.start(credentials);
+                        printServer.print(filename, printerName, credentials);
+
+                        break;
+                    case 2:
+                        System.out.println("Enter printer name: (hint printer0 or printer1)");
+                        printerName = scn.nextLine();
+                        Integer queueSize = printServer.queue(printerName, credentials);
+                        if (queueSize != null) {
+                            System.out.println("Queue size of printer " + printerName + " is " + queueSize);
+                            System.out.println();
+                        } else {
+                            System.out.println("Queue size of printer " + printerName + " not found");
+                            System.out.println();
+                        }
+                        break;
+                    case 3:
+
+                        System.out.println("Select printer name: (hint printer0 or printer1)");
+                        printerName = scn.nextLine();
+
+                        System.out.println("Which job would you like to move to the top of " + printerName + "? Enter job number:");
+                        int jobNumber = scn.nextInt();
+                        printServer.topQueue(printerName, jobNumber, credentials);
+                        break;
+                    case 4:
+                        printServer.start(credentials);
+                        break;
+                    case 5:
+                        printServer.stop(credentials);
+                        break;
+                    case 6:
+                        printServer.restart(credentials);
+                        break;
+                    case 7:
+                        System.out.println("Select printer name: (hint printer0 or printer1)");
+                        printerName = scn.nextLine();
+                        String result = printServer.status(printerName, credentials);
+                        if (result != null) {
+                            System.out.println("Status of printer " + printerName + " is " + result);
+                            System.out.println();
+                        } else {
+                            System.out.println("Status for " + printerName + " not found");
+                            System.out.println();
+                        }
+
+                        break;
+                    case 8:
+                        System.out.println("Select config property: ");
+                        configProperty = scn.nextLine();
+                        printServer.readConfig(configProperty, credentials);
+
+                        break;
+                    case 9:
+                        System.out.println("Select config property: ");
+                        configProperty = scn.nextLine();
+                        System.out.println("Enter config value: ");
+                        String configValue = scn.nextLine();
+                        printServer.setConfig(configProperty, configValue, credentials);
+                        break;
+                    case 10:
+                        terminate = true;
+                        break;
+                    default:
+                        System.err.println("Unknown option!");
+                        break;
                 }
-            }
+            } while (!terminate);
 
 
-            try {
-                printServer.start(credentials);
-            } catch (AuthenticationException ae) {
-                System.err.println("Oups: Not authenticated. " + ae.getMessage());
-            }
-        } catch (RemoteException | NotBoundException | MalformedURLException e) {
-            System.err.println("Access forbidden from the server: " + e.getMessage());
+            System.out.println("Job Done!");
 
+        } catch (NotBoundException | MalformedURLException | RemoteException e) {
+            System.err.println("Could not connect to server: " + e.getMessage());
+        } catch (AuthenticationException ae) {
+            System.err.println("Oups: Failed to authenticate. " + ae.getMessage());
         }
+    }
 
-        System.out.println("Job Done!");
+    private static int selectOption() {
+
+        Scanner reader = new Scanner(System.in);
+        System.out.println("Select an option : ");
+        System.out.println("1.  print filename on specified printer ");
+        System.out.println("2.  list the print queue  ");
+        System.out.println("3.  move job on top of queue ");
+        System.out.println("4.  start the print server  ");
+        System.out.println("5.  stop the print server  ");
+        System.out.println("6.  restart the print server  ");
+        System.out.println("7.  print status of printer on display  ");
+        System.out.println("8.  read configuration  ");
+        System.out.println("9. change configuration  ");
+        System.out.println("10. EXIT  ");
+
+        System.out.println();
+        System.out.println("Please select option:");
+        return reader.nextInt();
     }
 
 }

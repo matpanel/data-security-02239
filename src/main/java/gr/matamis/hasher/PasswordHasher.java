@@ -7,14 +7,9 @@ import java.util.Base64;
 
 public class PasswordHasher {
 
-    public static void main(String[] args) throws NoSuchAlgorithmException, PasswordStorage.CannotPerformOperationException {
+    public static void main(String[] args) throws NoSuchAlgorithmException {
         String password = args[0];
-        String hashedpassword;
 
-        PasswordStorage passwordStorage = new PasswordStorage();
-        hashedpassword=passwordStorage.createHash(password);
-        System.out.println(hashedpassword);
-/*
         SecureRandom random = new SecureRandom();
         byte[] saltBytes = new byte[16];
         random.nextBytes(saltBytes);
@@ -28,8 +23,6 @@ public class PasswordHasher {
         byte[] hashedPasswordBytes = messageDigest.digest(password.getBytes());
         String base64HashedPassword = base64Encoder.encodeToString(hashedPasswordBytes);
 
-        System.out.println(base64Salt+"$"+base64HashedPassword);
-
- */
+        System.out.println(base64Salt+":"+base64HashedPassword);
     }
 }
