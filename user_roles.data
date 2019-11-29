@@ -1,0 +1,11 @@
+panos:user
+jonas:user
+ergys:user
+rami:user
+Alice:admin
+Bob:technician
+Cecilia:power_user
+David:user
+Erica:user
+Fred:user
+George:user,technician
