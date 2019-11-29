@@ -12,6 +12,7 @@ import java.util.Scanner;
 
 import gr.matamis.server.AuthenticationException;
 import gr.matamis.server.Credentials;
+import gr.matamis.server.PermissionException;
 import gr.matamis.server.PrintServer;
 
 public class PrinterClient {
@@ -136,6 +137,9 @@ public class PrinterClient {
             System.err.println("Could not connect to server: " + e.getMessage());
         } catch (AuthenticationException ae) {
             System.err.println("Oups: Failed to authenticate. " + ae.getMessage());
+        }
+        catch (PermissionException pe) {
+            System.err.println("Oups: Not having the permission. " + pe.getMessage());
         }
     }
 

@@ -1,4 +1,11 @@
-panos:HmacSHA256:64000:18:PKrO2r5hlAe2VZwe9LK3LOCF87lQJw5/:5QZxnUL/5b7Pt69EVLlJtqr+
-jonas:HmacSHA512:64000:18:560tIvENLg+G1HuCL2OzQn5DXLjdWG8h:1Qj7SDkOt4zx0bTC6W2kkZk0
-ergys:HmacSHA512:64000:18:MDKJUe0SbqWbXi/RvFGHuEB9Ejt4b/Ar:oUoY4XuQyL7QKu53S3vY32wS
-rami:HmacSHA512:64000:18:n5sYcEFO5vgfaNNVb/vU5KuGfMwkPegh:x5U2Nsui61kkMum2V7youYUx
+panos:HmacSHA256:64000:18:PKrO2r5hlAe2VZwe9LK3LOCF87lQJw5/:5QZxnUL/5b7Pt69EVLlJtqr+:print,queue
+jonas:HmacSHA512:64000:18:560tIvENLg+G1HuCL2OzQn5DXLjdWG8h:1Qj7SDkOt4zx0bTC6W2kkZk0:print,queue
+ergys:HmacSHA512:64000:18:MDKJUe0SbqWbXi/RvFGHuEB9Ejt4b/Ar:oUoY4XuQyL7QKu53S3vY32wS:print,queue
+rami:HmacSHA512:64000:18:n5sYcEFO5vgfaNNVb/vU5KuGfMwkPegh:x5U2Nsui61kkMum2V7youYUx:print,queue
+Alice:HmacSHA512:64000:18:Nij1F/XKp5tGi3LgA+bimkeZ8d6XRXla:KHOffNBqYoYxixK7G5On9PMD:print,queue,topQueue,start,stop,restart,status,readConfig,setConfig
+Bob:HmacSHA512:64000:18:r6wmpeDhMoFszqCIDzXyo9/cnba82ji8:n4BvWk+5fZ1S4JqjZl0cuoo9:start,stop,restart,status,readConfig,setConfig
+Cecilia:HmacSHA512:64000:18:5egRcL9BXbZDSxkIyxfcp3Z7Mpv6amNv:/qMjUbC1cC9y4+NhsSHIpHxy:print,queue,topQueue,restart
+David:HmacSHA512:64000:18:8Q/s3/fVYRenzwO8bhIW27V0shfhXNTg:dlytl7ED/WEZ87wf37SnnDNCprint,queue
+Erica:HmacSHA512:64000:18:Xr1vLDViHhE2jxvH/3m/ldHM5xD6M+0g:7MaWiMgTZWgKHF00V9Tsjzjw:print,queue
+Fred:HmacSHA512:64000:18:wLdw1b2XNe0E7NHgAgQk5R/0V4HvNnPu:TZ9BphM1XIi39fr6R8zRmAey:print,queue
+George:HmacSHA512:64000:18:oDT0Kq6Qvy13Tmc5lRl39E85QT7aNREx:hYm4vmvO+/IsIBvC5LhAsIm4:print,queue

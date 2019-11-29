@@ -12,9 +12,10 @@ public class PasswordStorage {
     public static void main(String[] args) throws CannotPerformOperationException {
 
         String password = args[0];
+        String accessControlList = args[1];
         String hashedpassword;
 
-        hashedpassword = PasswordStorage.createHash(PRF, password);
+        hashedpassword = PasswordStorage.createHash(PRF, password, accessControlList);
         System.out.println(hashedpassword);
     }
 
@@ -56,12 +57,12 @@ public class PasswordStorage {
     public static final int SALT_INDEX = 3;
     public static final int PBKDF2_INDEX = 4;
 
-    public static String createHash(String prf, String password)
+    public static String createHash(String prf, String password, String acl)
             throws CannotPerformOperationException {
-        return createHash(prf, password.toCharArray());
+        return createHash(prf, password.toCharArray(), acl);
     }
 
-    public static String createHash(String prf, char[] password)
+    public static String createHash(String prf, char[] password, String acl)
             throws CannotPerformOperationException {
         // Generate a random salt
         SecureRandom random = new SecureRandom();
@@ -72,14 +73,16 @@ public class PasswordStorage {
         byte[] hash = pbkdf2(prf, password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
         int hashSize = hash.length;
 
-        // format: algorithm:iterations:hashSize:salt:hash
+        // format: algorithm:iterations:hashSize:salt:hash:acl
         String parts = PRF + ":" +
                 PBKDF2_ITERATIONS +
                 ":" + hashSize +
                 ":" +
                 toBase64(salt) +
                 ":" +
-                toBase64(hash);
+                toBase64(hash) +
+                ":" +
+                acl;
         return parts;
     }
 

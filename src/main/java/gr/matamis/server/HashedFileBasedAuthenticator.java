@@ -1,37 +1,41 @@
 package gr.matamis.server;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.List;
 
 import gr.matamis.hasher.PasswordStorage;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class HashedFileBasedAuthenticator implements AuthenticationService {
 
     private final Map<String, String> passwords;
+    private final Map<String, Set<String>> acls;
 
     public HashedFileBasedAuthenticator(Path passwordFile) throws IOException {
+
         List<String> userEntries = Files.readAllLines(passwordFile);
         passwords = new HashMap<>();
+        acls = new HashMap<>();
         for (String userEntry : userEntries) {
-            int firstColonIndex = userEntry.indexOf(":");
-
-            String key = userEntry.substring(0, firstColonIndex);
-
-            String storedPassData = userEntry.substring(firstColonIndex + 1);
-
+            String[] entries = userEntry.split(":");
+            String key = entries[0].trim();
+            String storedPassData = Arrays
+                    .stream(entries, 1, 6)
+                    .reduce((left, right) -> left + ":" + right)
+                    .get();
 
             passwords.put(key, storedPassData);
 
-
+            if (entries.length == 7) {
+                Set<String> functionNames = new HashSet<String>(Arrays.asList(entries[6].split(",")));
+                acls.put(key, functionNames);
+            }
+            else {
+                acls.put(key, Collections.<String>emptySet());
+            }
         }
+
     }
 
     @Override
@@ -54,5 +58,11 @@ public class HashedFileBasedAuthenticator implements AuthenticationService {
 
         return isAuthenticated;
 
+    }
+
+    @Override
+    public boolean hasPermission(Credentials credentials, String functionName) {
+        String username = credentials.getUsername();
+        return acls.containsKey(username) && acls.get(username).contains(functionName);
     }
 }

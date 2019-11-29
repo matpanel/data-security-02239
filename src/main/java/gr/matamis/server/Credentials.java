@@ -1,6 +1,5 @@
 package gr.matamis.server;
 
-import javax.print.DocFlavor;
 import java.io.Serializable;
 import java.util.Objects;
 

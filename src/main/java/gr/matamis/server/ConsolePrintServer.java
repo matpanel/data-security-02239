@@ -33,9 +33,10 @@ public class ConsolePrintServer implements PrintServer {
     }
 
     @Override
-    public void print(String filename, String printer, Credentials credentials) throws AuthenticationException {
+    public void print(String filename, String printer, Credentials credentials) throws AuthenticationException, PermissionException {
 
         checkUserIsAuthenticated(credentials);
+        checkPermission(credentials, ACL_PRINT);
 
         Queue<Integer> printerQueue = printer2queue.get(printer);
         if (printerQueue != null) {
@@ -53,8 +54,10 @@ public class ConsolePrintServer implements PrintServer {
     }
 
     @Override
-    public boolean topQueue(String printer, int job, Credentials credentials) throws AuthenticationException {
+    public boolean topQueue(String printer, int job, Credentials credentials) throws AuthenticationException, PermissionException {
         checkUserIsAuthenticated(credentials);
+        checkPermission(credentials, ACL_TOP_QUEUE);
+
         boolean success = false;
         Deque<Integer> printerQueue = printer2queue.get(printer);
         if (printerQueue != null && printerQueue.remove(job)) {
@@ -65,8 +68,9 @@ public class ConsolePrintServer implements PrintServer {
     }
 
     @Override
-    public String status(String printer, Credentials credentials) throws AuthenticationException {
+    public String status(String printer, Credentials credentials) throws AuthenticationException, PermissionException {
         checkUserIsAuthenticated(credentials);
+        checkPermission(credentials, ACL_STATUS);
 
         Queue<Integer> printerQueue = printer2queue.get(printer);
         String result = null;
@@ -83,8 +87,9 @@ public class ConsolePrintServer implements PrintServer {
     }
 
     @Override
-    public List<String> queue(String printer, Credentials credentials) throws AuthenticationException {
+    public List<String> queue(String printer, Credentials credentials) throws AuthenticationException, PermissionException {
         checkUserIsAuthenticated(credentials);
+        checkPermission(credentials, ACL_QUEUE);
 
         Queue<Integer> printerQueue = printer2queue.get(printer);
         List<String> jobList = null;
@@ -102,19 +107,23 @@ public class ConsolePrintServer implements PrintServer {
     }
 
     @Override
-    public void restart(Credentials credentials) throws AuthenticationException {
-
-
+    public void restart(Credentials credentials) throws AuthenticationException, PermissionException {
         checkUserIsAuthenticated(credentials);
+        checkPermission(credentials, ACL_RESTART);
 
-        this.stop(credentials);
-        this.start(credentials);
+        if (this.printerFuture != null) {
+            this.printerFuture.cancel(true);
+            System.out.println("Restarting Server...");
+            this.printerFuture = scheduler.scheduleWithFixedDelay(this::printJobs, 5, 5, TimeUnit.SECONDS);
+        }
+
     }
 
     @Override
-    public void start(Credentials credentials) throws AuthenticationException {
+    public void start(Credentials credentials) throws AuthenticationException, PermissionException {
 
         checkUserIsAuthenticated(credentials);
+        checkPermission(credentials, ACL_START);
 
         if (this.printerFuture == null) {
 
@@ -124,9 +133,10 @@ public class ConsolePrintServer implements PrintServer {
     }
 
     @Override
-    public void stop(Credentials credentials) throws AuthenticationException {
+    public void stop(Credentials credentials) throws AuthenticationException, PermissionException {
 
         checkUserIsAuthenticated(credentials);
+        checkPermission(credentials, ACL_STOP);
 
         if (this.printerFuture != null) {
             this.printerFuture.cancel(true);
@@ -135,15 +145,16 @@ public class ConsolePrintServer implements PrintServer {
     }
 
     @Override
-    public void readConfig(String parameter, Credentials credentials) throws AuthenticationException {
+    public void readConfig(String parameter, Credentials credentials) throws AuthenticationException, PermissionException {
         checkUserIsAuthenticated(credentials);
+        checkPermission(credentials, ACL_READ_CONFIG);
 
     }
 
     @Override
-    public void setConfig(String parameter, String value, Credentials credentials) throws AuthenticationException {
+    public void setConfig(String parameter, String value, Credentials credentials) throws AuthenticationException, PermissionException {
         checkUserIsAuthenticated(credentials);
-
+        checkPermission(credentials, ACL_SET_CONFIG);
     }
 
     private void printJobs() {
@@ -166,6 +177,12 @@ public class ConsolePrintServer implements PrintServer {
     private void checkUserIsAuthenticated(Credentials credentials) throws AuthenticationException {
         if (!authenticationService.isAuthenticated(credentials)) {
             throw new AuthenticationException(credentials);
+        }
+    }
+
+    private void checkPermission(Credentials credentials, String functionName) throws PermissionException {
+        if(!authenticationService.hasPermission(credentials, functionName)) {
+            throw new PermissionException(credentials, functionName);
         }
     }
 }

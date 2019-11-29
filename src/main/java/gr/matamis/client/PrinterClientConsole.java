@@ -2,6 +2,7 @@ package gr.matamis.client;
 
 import gr.matamis.server.AuthenticationException;
 import gr.matamis.server.Credentials;
+import gr.matamis.server.PermissionException;
 import gr.matamis.server.PrintServer;
 
 import java.net.MalformedURLException;
@@ -84,6 +85,9 @@ public class PrinterClientConsole {
                 } catch (AuthenticationException ae) {
                     System.err.println("Oups: Not authenticated. " + ae.getMessage());
                 }
+                catch (PermissionException pe) {
+                    System.err.println("Oups: Not having the permission. " + pe.getMessage());
+                }
             }
 
 
@@ -91,6 +95,9 @@ public class PrinterClientConsole {
                 printServer.start(credentials);
             } catch (AuthenticationException ae) {
                 System.err.println("Oups: Not authenticated. " + ae.getMessage());
+            }
+            catch (PermissionException pe) {
+                System.err.println("Oups: Not having the permission. " + pe.getMessage());
             }
         } catch (RemoteException | NotBoundException | MalformedURLException e) {
             System.err.println("Access forbidden from the server: " + e.getMessage());
